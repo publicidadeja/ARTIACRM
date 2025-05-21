@@ -1,0 +1,151 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = "mysql://root:@localhost:3306/artia"
+}
+
+model account {
+  id                String  @id
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+  user              user    @relation(fields: [userId], references: [id], onDelete: Cascade, map: "Account_userId_fkey")
+
+  @@unique([provider, providerAccountId], map: "Account_provider_providerAccountId_key")
+  @@index([userId], map: "Account_userId_fkey")
+}
+
+model client {
+  id                    String   @id
+  companyName           String
+  contactName           String
+  email                 String
+  phone                 String?
+  address               String?
+  userId                String
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime
+  brandProfile          String?  @db.Text
+  targetAudience        String?  @db.Text
+  keywords              String?  @db.Text
+  contentHistory        String?  @db.Text
+  marketingObjectives   String?  @db.Text
+  restrictions          String?  @db.Text
+  socialMediaCredentials String? @db.Text
+  user                  user     @relation(fields: [userId], references: [id], map: "Client_userId_fkey")
+  task                  task[]
+  aIContent             aIContent[]
+
+  @@index([userId], map: "Client_userId_fkey")
+}
+
+model session {
+  id           String   @id
+  sessionToken String   @unique(map: "Session_sessionToken_key")
+  userId       String
+  expires      DateTime
+  user         user     @relation(fields: [userId], references: [id], onDelete: Cascade, map: "Session_userId_fkey")
+
+  @@index([userId], map: "Session_userId_fkey")
+}
+
+model task {
+  id          String    @id
+  title       String
+  description String    @db.Text
+  status      String
+  priority    String
+  dueDate     DateTime?
+  clientId    String
+  userId      String
+  comments    String?   @db.LongText
+  attachments String?   @db.LongText
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime
+  client      client    @relation(fields: [clientId], references: [id], map: "Task_clientId_fkey")
+  user        user      @relation(fields: [userId], references: [id], map: "Task_userId_fkey")
+
+  @@index([clientId], map: "Task_clientId_fkey")
+  @@index([userId], map: "Task_userId_fkey")
+}
+
+model passwordReset {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  token     String   
+  expiresAt DateTime 
+  user      user     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model user {
+  id            String          @id
+  email         String          @unique(map: "User_email_key")
+  name          String
+  role          String          @default("user")
+  image         String?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime
+  password      String?
+  account       account[]
+  client        client[]
+  session       session[]
+  task          task[]
+  passwordReset passwordReset?
+  aIAgent       aIAgent[]
+  aIContent     aIContent[]
+}
+
+model verificationtoken {
+  identifier String
+  token      String   @unique(map: "VerificationToken_token_key")
+  expires    DateTime
+
+  @@unique([identifier, token], map: "VerificationToken_identifier_token_key")
+}
+
+// Novos modelos para migração do Firebase
+
+model aIContent {
+  id            String    @id @default(uuid())
+  userId        String
+  clientId      String?
+  instructions  String    @db.Text
+  contentType   String
+  toneOfVoice   String
+  contentLength String
+  language      String
+  createdAt     DateTime  @default(now())
+  content       String    @db.LongText
+  metadata      String?   @db.Text
+  user          user      @relation(fields: [userId], references: [id])
+  client        client?   @relation(fields: [clientId], references: [id])
+  
+  @@index([userId])
+  @@index([clientId])
+}
+
+model aIAgent {
+  id                String    @id @default(uuid())
+  userId            String
+  name              String
+  description       String?   @db.Text
+  personalityStyle  String?   @db.Text
+  basePrompt        String    @db.Text
+  isPublic          Boolean   @default(false)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  user              user      @relation(fields: [userId], references: [id])
+  
+  @@index([userId])
+}

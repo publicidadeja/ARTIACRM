@@ -1,0 +1,30 @@
+# Configuração do Ambiente
+
+Para configurar seu ambiente, crie um arquivo .env na raiz do projeto com as seguintes configurações:
+
+```
+# Configuração do banco de dados MySQL
+# Para desenvolvimento local com XAMPP
+DATABASE_URL="mysql://root:@localhost:3306/artia"
+
+# Configuração do NextAuth
+# Gere um segredo usando: openssl rand -base64 32
+NEXTAUTH_SECRET="gerar_um_segredo_usando_openssl_rand_-base64_32"
+NEXTAUTH_URL="http://localhost:9002"
+```
+
+## Para ambiente de produção no CyberPanel:
+
+```
+# Configuração do banco de dados MySQL
+DATABASE_URL="mysql://usuario:senha@seu_host:3306/nome_do_banco"
+
+# Configuração do NextAuth
+NEXTAUTH_SECRET="seu_segredo_seguro_gerado"
+NEXTAUTH_URL="https://seudominio.com"
+```
+
+## Notas:
+1. Substitua os valores pelos dados reais do seu ambiente
+2. O arquivo .env deve ser mantido fora do controle de versão
+3. O NEXTAUTH_SECRET deve ser único e seguro para proteger suas sessões 
